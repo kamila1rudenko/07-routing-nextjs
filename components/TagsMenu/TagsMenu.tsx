@@ -1,52 +1,52 @@
-import { getTags } from "@/lib/api";
-import Link from "next/link";
-import css from "./TagsMenu.module.css";
+'use client';
 
-export default async function TagsMenu() {
-  try {
-    const tags = await getTags();
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import css from './TagsMenu.module.css';
 
-    return (
-      <div className={css.menuContainer}>
-        <button className={css.menuButton}>Notes ▾</button>
+const tags = ['All', 'Todo', 'Work', 'Personal', 'Shopping', 'Meeting'];
+
+export default function TagsMenu() {
+  const [isOpen, setIsOpen] = useState(false);
+  const toggle = () => setIsOpen(!isOpen);
+  const pathname = usePathname();
+  const currentTag = pathname.split('/').pop();
+
+  
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  return (
+    <div className={css.menuContainer}>
+      <button
+        onClick={toggle}
+        className={css.menuButton}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+      >
+        Notes ▾
+      </button>
+      {isOpen && (
         <ul className={css.menuList}>
-          <li className={css.menuItem}>
-            <Link href="/notes/filter/All" className={css.menuLink}>
-              All notes
-            </Link>
-          </li>
-
-          {tags.length > 0 ? (
-            tags.map((tag) => (
-              <li key={tag} className={css.menuItem}>
-                <Link
-                  href={`/notes/filter/${encodeURIComponent(tag)}`}
-                  className={css.menuLink}
-                >
-                  {tag}
-                </Link>
-              </li>
-            ))
-          ) : (
-            <li className={css.menuItem}>
-              <span className={css.menuLink}>No tags available</span>
+          {tags.map((tag) => (
+            <li key={tag} className={css.menuItem}>
+              <Link
+                href={`/notes/filter/${tag === 'All' ? '' : tag}`}
+                className={`${css.menuLink} ${currentTag === tag ? css.active : ''}`}
+                onClick={toggle}
+              >
+                {tag}
+              </Link>
             </li>
-          )}
+          ))}
         </ul>
-      </div>
-    );
-  } catch (error) {
-    console.error("Error loading tags:", error);
-
-    return (
-      <div className={css.menuContainer}>
-        <button className={css.menuButton}>Notes ▾</button>
-        <ul className={css.menuList}>
-          <li className={css.menuItem}>
-            <span className={css.menuLink}>Failed to load tags</span>
-          </li>
-        </ul>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 }
