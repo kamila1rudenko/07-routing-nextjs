@@ -34,7 +34,7 @@ export default function NotesClient({ initialData, initialTag }: NotesClientProp
       fetchNotes({
         search: debouncedSearchValue,
         page: currentPage,
-        tag: initialTag,
+        tag: initialTag || '', 
       }),
     placeholderData: keepPreviousData,
     refetchOnMount: false,
