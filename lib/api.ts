@@ -1,5 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import type { CreateNotePayload, Note } from '../types/note';
+
 const BASE_URL = 'https://notehub-public.goit.study/api';
 const API_TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN || '';
 
@@ -8,13 +9,40 @@ export interface FetchNotesResponse {
   totalPages: number;
 }
 
-interface FetchNotesParams {
+export interface FetchNotesParams {
   page?: number;
   perPage?: number;
   search?: string;
   tag?: string;
   sortBy?: 'created' | 'updated';
 }
+
+const validateParams = ({
+  page = 1,
+  perPage = 12,
+  search = '',
+  tag = '',
+  sortBy = 'created',
+}: FetchNotesParams = {}): Record<string, string | number> => {
+  const params: Record<string, string | number> = {
+    page: Math.max(1, page),
+    perPage: Math.max(1, perPage),
+  };
+
+  if (sortBy === 'created' || sortBy === 'updated') {
+    params.sortBy = sortBy;
+  } else {
+    params.sortBy = 'created';
+  }
+
+  const trimmedSearch = search.trim();
+  if (trimmedSearch) params.search = trimmedSearch;
+
+  const trimmedTag = (tag ?? '').trim().toLowerCase();
+  if (trimmedTag && trimmedTag !== 'all') params.tag = trimmedTag;
+
+  return params;
+};
 
 export const fetchNotes = async ({
   page = 1,
@@ -23,48 +51,75 @@ export const fetchNotes = async ({
   tag = '',
   sortBy = 'created',
 }: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
-  const params: Record<string, string | number> = { page, perPage, sortBy };
+  if (!API_TOKEN) {
+    throw new Error('API token is missing');
+  }
 
-  const s = search.trim();
-  if (s) params.search = s;
+  const params = validateParams({ page, perPage, search, tag, sortBy });
 
-  const t = tag.trim();
-  if (t && t.toLowerCase() !== 'all') params.tag = t; // "All" не отправляем
+  console.log('Fetching notes with params:', params);
+  console.log('Using API token:', API_TOKEN ? 'Yes' : 'No');
 
-  const response = await axios.get<FetchNotesResponse>(`${BASE_URL}/notes`, {
-    params,
-    headers: { Authorization: `Bearer ${API_TOKEN}` },
-  });
-  return response.data;
+  try {
+    const response = await axios.get<FetchNotesResponse>(`${BASE_URL}/notes`, {
+      params,
+      headers: { Authorization: `Bearer ${API_TOKEN}` },
+    });
+    return response.data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('API error fetching notes:', err.response?.data || err.message);
+    throw err;
+  }
 };
 
 export const fetchNoteById = async (id: string): Promise<Note> => {
-  const response = await axios.get<Note>(`${BASE_URL}/notes/${id}`, {
-    headers: { Authorization: `Bearer ${API_TOKEN}` },
-  });
-  return response.data;
+  if (!API_TOKEN) {
+    throw new Error('API token is missing');
+  }
+
+  try {
+    const response = await axios.get<Note>(`${BASE_URL}/notes/${id}`, {
+      headers: { Authorization: `Bearer ${API_TOKEN}` },
+    });
+    return response.data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error(`API error fetching note with id ${id}:`, err.response?.data || err.message);
+    throw err;
+  }
 };
 
 export const createNote = async (noteData: CreateNotePayload): Promise<Note> => {
-  const response = await axios.post<Note>(`${BASE_URL}/notes`, noteData, {
-    headers: { Authorization: `Bearer ${API_TOKEN}` },
-  });
-  return response.data;
+  if (!API_TOKEN) {
+    throw new Error('API token is missing');
+  }
+
+  try {
+    const response = await axios.post<Note>(`${BASE_URL}/notes`, noteData, {
+      headers: { Authorization: `Bearer ${API_TOKEN}` },
+    });
+    return response.data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('API error creating note:', err.response?.data || err.message);
+    throw err;
+  }
 };
 
 export const deleteNote = async (noteId: string): Promise<Note> => {
-  const response = await axios.delete<Note>(`${BASE_URL}/notes/${noteId}`, {
-    headers: { Authorization: `Bearer ${API_TOKEN}` },
-  });
-  return response.data;
+  if (!API_TOKEN) {
+    throw new Error('API token is missing');
+  }
+
+  try {
+    const response = await axios.delete<Note>(`${BASE_URL}/notes/${noteId}`, {
+      headers: { Authorization: `Bearer ${API_TOKEN}` },
+    });
+    return response.data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error(`API error deleting note with id ${noteId}:`, err.response?.data || err.message);
+    throw err;
+  }
 };
-
-
-// export const getTags = async (): Promise<string[]> => {
-//   const { notes } = await fetchNotes({ page: 1, perPage: 100 });
-//   return Array.from(
-//     new Set(
-//       notes.map(n => n.tag?.trim()).filter((t): t is string => Boolean(t))
-//     )
-//   );
-// };

@@ -28,19 +28,20 @@ export default function NotesClient({ initialData, initialTag }: NotesClientProp
   const [debouncedSearchValue] = useDebounce(searchValue, 1000);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isFetching, isError, isSuccess } = useQuery({
-    queryKey: ['notes', debouncedSearchValue, currentPage, initialTag],
-    queryFn: () =>
-      fetchNotes({
-        search: debouncedSearchValue,
-        page: currentPage,
-        tag: initialTag || '', 
-      }),
-    placeholderData: keepPreviousData,
-    refetchOnMount: false,
-    initialData:
-      debouncedSearchValue === '' && currentPage === 1 ? initialData : undefined,
-  });
+const { data, isFetching, isError, isSuccess } = useQuery({
+  queryKey: ['notes', debouncedSearchValue, currentPage, initialTag],
+  queryFn: () =>
+    fetchNotes({
+      search: debouncedSearchValue,
+      page: currentPage,
+      tag: initialTag || '',
+    }),
+  placeholderData: keepPreviousData,
+  refetchOnMount: false,
+  enabled: debouncedSearchValue !== '' || currentPage !== 1,
+  initialData:
+    debouncedSearchValue === '' && currentPage === 1 ? initialData : undefined,
+});
 
   const handleSearch = (search: string) => {
     setSearchValue(search);

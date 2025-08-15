@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import css from './TagsMenu.module.css';
@@ -11,16 +11,9 @@ export default function TagsMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
   const pathname = usePathname();
-  const currentTag = pathname.split('/').pop();
 
-  
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  const currentTagRaw = pathname.split('/').pop() || '';
+  const currentTag = currentTagRaw.toLowerCase();
 
   return (
     <div className={css.menuContainer}>
@@ -34,17 +27,25 @@ export default function TagsMenu() {
       </button>
       {isOpen && (
         <ul className={css.menuList}>
-          {tags.map((tag) => (
-            <li key={tag} className={css.menuItem}>
-              <Link
-                href={`/notes/filter/${tag === 'All' ? '' : tag}`}
-                className={`${css.menuLink} ${currentTag === tag ? css.active : ''}`}
-                onClick={toggle}
-              >
-                {tag}
-              </Link>
-            </li>
-          ))}
+          {tags.map((tag) => {
+            const tagLower = tag.toLowerCase();
+            const href = tag === 'All' ? '/notes/filter' : `/notes/filter/${tagLower}`;
+            const isActive =
+              (tagLower === 'all' && (currentTag === '' || currentTag === 'filter')) ||
+              currentTag === tagLower;
+
+            return (
+              <li key={tag} className={css.menuItem}>
+                <Link
+                  href={href}
+                  className={`${css.menuLink} ${isActive ? css.active : ''}`}
+                  onClick={toggle}
+                >
+                  {tag}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
