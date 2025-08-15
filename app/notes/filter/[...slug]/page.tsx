@@ -6,7 +6,7 @@ type NotesPageProps = {
 };
 
 export default async function NotesPage({ params }: NotesPageProps) {
-  const tagFromSlug = params.slug?.[0]; // Может быть undefined
+  const tagFromSlug = params.slug?.[0]; 
   const tag = !tagFromSlug || tagFromSlug.toLowerCase() === 'all' ? '' : tagFromSlug;
 
   const initialData = await fetchNotes({ page: 1, perPage: 12, tag });
