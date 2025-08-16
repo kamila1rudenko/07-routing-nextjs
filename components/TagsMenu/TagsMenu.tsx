@@ -2,52 +2,34 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import css from './TagsMenu.module.css';
 
-const tags = ['All', 'Todo', 'Work', 'Personal', 'Shopping', 'Meeting'];
+const TagsMenu = () => {
+  const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
 
-export default function TagsMenu() {
-  const [isOpen, setIsOpen] = useState(false);
-  const toggle = () => setIsOpen(!isOpen);
-  const pathname = usePathname();
-
-  const currentTagRaw = pathname.split('/').pop() || '';
-  const currentTag = currentTagRaw.toLowerCase();
-
+  const handleDropdownClose = () => {
+    setDropdownIsOpen(!dropdownIsOpen);
+  };
   return (
     <div className={css.menuContainer}>
-      <button
-        onClick={toggle}
-        className={css.menuButton}
-        aria-expanded={isOpen}
-        aria-haspopup="true"
-      >
-        Notes ▾
+      <button onClick={handleDropdownClose} className={css.menuButton}>
+        {dropdownIsOpen ? 'Notes ▴' : 'Notes ▾'}
       </button>
-      {isOpen && (
-        <ul className={css.menuList}>
-          {tags.map((tag) => {
-            const tagLower = tag.toLowerCase();
-            const href = tag === 'All' ? '/notes/filter' : `/notes/filter/${tagLower}`;
-            const isActive =
-              (tagLower === 'all' && (currentTag === '' || currentTag === 'filter')) ||
-              currentTag === tagLower;
-
-            return (
+      {dropdownIsOpen && (
+        <ul onClick={handleDropdownClose} className={css.menuList}>
+          {['All', 'Work', 'Personal', 'Meeting', 'Shopping', 'Todo'].map(
+            tag => (
               <li key={tag} className={css.menuItem}>
-                <Link
-                  href={href}
-                  className={`${css.menuLink} ${isActive ? css.active : ''}`}
-                  onClick={toggle}
-                >
+                <Link href={`/notes/filter/${tag}`} className={css.menuLink}>
                   {tag}
                 </Link>
               </li>
-            );
-          })}
+            )
+          )}
         </ul>
       )}
     </div>
   );
 }
+
+export default TagsMenu;

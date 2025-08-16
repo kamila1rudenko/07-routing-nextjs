@@ -3,23 +3,19 @@
 import React, { useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-
 import Modal from '@/components/Modal/Modal';
 import css from '@/components/Modal/Modal.module.css';
 import { fetchNoteById } from '@/lib/api';
 
-
-type RouteParams = { id: string };
+const formatDate = (date?: string) => {
+  return date ? new Date(date).toLocaleString() : 'N/A';
+};
 
 export default function NotePreviewClient() {
-  const { id } = useParams<RouteParams>();
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
-  const {
-    data: note,
-    isFetching,
-    isError,
-  } = useQuery({
+  const { data: note, isFetching, isError } = useQuery({
     queryKey: ['note', id],
     queryFn: () => fetchNoteById(id),
     enabled: !!id,
@@ -41,17 +37,10 @@ export default function NotePreviewClient() {
         <p className={css.content}>Title: {note.title}</p>
         <p className={css.content}>Content: {note.content}</p>
         <p className={css.content}>Tag: {note.tag}</p>
-        {note.createdAt ? (
-          <p className={css.content}>
-            Created At: {new Date(note.createdAt).toLocaleString()}
-          </p>
-        ) : (
-          <p className={css.content}>
-            Updated At: {new Date(note.updatedAt ?? '').toLocaleString()}
-          </p>
-            
-        )}
-        <button type='button' className={css.backLink} onClick={handleCloseModal}>Close</button>
+        <p className={css.content}>Created At: {formatDate(note.createdAt)}</p>
+        <button type="button" className={css.backLink} onClick={handleCloseModal}>
+          Close
+        </button>
       </>
     </Modal>
   );

@@ -1,23 +1,17 @@
 import css from '@/app/notes/filter/@sidebar/SidebarNotes.module.css';
-import Link from 'next/link';
 
-const tags = ['All', 'Work', 'Personal', 'Meeting', 'Shopping', 'Todo'];
+import Link from 'next/link';
 
 const SidebarNotes = () => {
   return (
     <ul className={css.menuList}>
-      {tags.map((tag) => {
-        const tagLower = tag.toLowerCase();
-        const href = tag === 'All' ? '/notes/filter' : `/notes/filter/${tagLower}`;
-
-        return (
-          <li key={tag} className={css.menuItem}>
-            <Link href={href} className={css.menuLink}>
-              {tag}
-            </Link>
-          </li>
-        );
-      })}
+      {['All', 'Work', 'Personal', 'Meeting', 'Shopping', 'Todo'].map((tag) => (
+        <li key={tag} className={css.menuItem}>
+          <Link href={`/notes/filter/${tag}`} className={css.menuLink}>
+            {tag}
+          </Link>
+        </li>
+      ))}
     </ul>
   );
 };
